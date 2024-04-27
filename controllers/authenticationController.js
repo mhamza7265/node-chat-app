@@ -317,6 +317,25 @@ const updateProfile = async (req, res) => {
   }
 };
 
+const getUserAccounts = async (req, res) => {
+  try {
+    const users = await Authentication.aggregate([
+      { $match: { email: { $not: { $eq: req.headers.email } } } },
+      {
+        $project: {
+          password: 0,
+          verified: 0,
+        },
+      },
+    ]);
+    return res.status(200).json({ status: true, users });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ status: false, error: "Internal server error" });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -327,4 +346,5 @@ module.exports = {
   resetPassword,
   getProfile,
   updateProfile,
+  getUserAccounts,
 };
