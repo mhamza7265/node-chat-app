@@ -1,12 +1,8 @@
 const mongoose = require("mongoose");
 
 const chatSchema = new mongoose.Schema({
-  sender: {
-    type: String,
-    required: true,
-  },
-  receiver: {
-    type: String,
+  users: {
+    type: Array,
     required: true,
   },
   name: {
@@ -15,6 +11,10 @@ const chatSchema = new mongoose.Schema({
   },
   image: {
     type: String,
+    required: true,
+  },
+  date: {
+    type: Date,
     required: true,
   },
 });

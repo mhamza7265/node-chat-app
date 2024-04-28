@@ -9,8 +9,8 @@ app.use(express.json());
 app.use(express.static("files"));
 
 app.use(require("./routes/authenticationRoutes"));
-
 app.use(require("./routes/chatRoutes"));
+app.use(require("./routes/messageRoutes"));
 
 app.listen("3000", () => {
   console.log("Server started on port 3000");
