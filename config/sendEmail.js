@@ -3,18 +3,18 @@ const nodemailer = require("nodemailer");
 function sendEmail(user, data, type, userName) {
   return new Promise((resolve, reject) => {
     const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      host: "smtp.gmail.com",
+      service: "Webmail",
+      host: "mail.brainboxadvisory.com",
       port: 465,
       secure: true,
       auth: {
-        user: "servetechlahore@gmail.com",
-        pass: "buno gcvh zupa odfx",
+        user: "hamza.hanif@brainboxadvisory.com",
+        pass: "m1e#5K45`63#",
       },
     });
 
     const mailOptions = {
-      from: "auth.new.taske@gmail.com",
+      from: "Auth@brainboxadvisory.com",
       to: user,
       subject:
         type == "order"
@@ -37,7 +37,7 @@ function sendEmail(user, data, type, userName) {
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         // console.error("Error sending email: ", error);
-        return reject({ status: false, error: "Error sending email" });
+        return reject({ status: false, error });
       } else {
         // console.log("Email sent: ", info.response);
         return resolve({ status: true, message: info.response });

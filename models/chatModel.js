@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate-v2");
 
 const chatSchema = new mongoose.Schema({
   users: {
@@ -19,6 +20,7 @@ const chatSchema = new mongoose.Schema({
   },
 });
 
+chatSchema.plugin(mongoosePaginate);
 const Chat = mongoose.model("Chat", chatSchema);
 
 module.exports = Chat;

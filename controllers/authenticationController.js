@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const sendEmail = require("../config/sendEmail");
 const fs = require("fs");
 require("dotenv").config();
+const paginateExec = require("mongoose-aggregate-paginate-v2");
 
 const registerUser = async (req, res) => {
   const image = req.files
@@ -318,8 +319,12 @@ const updateProfile = async (req, res) => {
 };
 
 const getUserAccounts = async (req, res) => {
+  const currentPage = req.query.page;
+  let page = 1;
+  const limit = 5;
+  if (currentPage) page = currentPage;
   try {
-    const users = await Authentication.aggregate([
+    const user = Authentication.aggregate([
       { $match: { email: { $not: { $eq: req.headers.email } } } },
       {
         $project: {
@@ -328,7 +333,28 @@ const getUserAccounts = async (req, res) => {
         },
       },
     ]);
-    return res.status(200).json({ status: true, users });
+
+    Authentication.aggregatePaginate(user, { page, limit }, (err, result) => {
+      if (err) {
+      } else {
+        return res.status(200).json({ status: true, users: result });
+      }
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ status: false, error: "Internal server error" });
+  }
+};
+
+const getSearchedUser = async (req, res) => {
+  const email = req.params.email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  try {
+    const user = await Authentication.aggregate([
+      { $match: { email: { $not: { $eq: req.headers.email } } } },
+      { $match: { email: { $regex: email, $options: "i" } } },
+    ]);
+    return res.status(200).json({ status: true, user });
   } catch (err) {
     return res
       .status(500)
@@ -347,4 +373,5 @@ module.exports = {
   getProfile,
   updateProfile,
   getUserAccounts,
+  getSearchedUser,
 };
