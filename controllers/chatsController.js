@@ -6,11 +6,11 @@ const addChat = async (req, res) => {
       { $match: { users: { $eq: req.headers.email } } },
       { $match: { users: { $eq: req.body.receiver } } },
     ]);
-    console.log("users", users);
     const date = new Date();
     if (users.length < 1) {
       const chat = await Chat.create({
         users: [req.headers.email, req.body.receiver],
+        userIds: [req.headers.id, req.body.userId],
         name: req.body.name,
         image: req.body.image,
         date: date.toISOString(),

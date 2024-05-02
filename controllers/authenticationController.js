@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const sendEmail = require("../config/sendEmail");
 const fs = require("fs");
 require("dotenv").config();
-const paginateExec = require("mongoose-aggregate-paginate-v2");
 
 const registerUser = async (req, res) => {
   const image = req.files
@@ -50,6 +49,7 @@ const loginUser = async (req, res) => {
           console.log("secret", process.env.JWT_SECRET);
           const token = jwt.sign(
             {
+              id: user._id,
               email: user.email,
               firstName: user.firstName,
               lastName: user.lastName,
