@@ -318,14 +318,14 @@ const updateProfile = async (req, res) => {
   }
 };
 
-const getUserAccounts = async (req, res) => {
-  const currentPage = req.query.page;
+const getUserAccounts = async (socket, data) => {
+  const currentPage = data.page;
   let page = 1;
   const limit = 5;
   if (currentPage) page = currentPage;
   try {
     const user = Authentication.aggregate([
-      { $match: { email: { $not: { $eq: req.headers.email } } } },
+      { $match: { email: { $not: { $eq: socket.headers.email } } } },
       {
         $project: {
           password: 0,
@@ -334,31 +334,27 @@ const getUserAccounts = async (req, res) => {
       },
     ]);
 
-    Authentication.aggregatePaginate(user, { page, limit }, (err, result) => {
-      if (err) {
-      } else {
-        return res.status(200).json({ status: true, users: result });
-      }
+    const usersList = await Authentication.aggregatePaginate(user, {
+      page,
+      limit,
     });
+    console.log("usersList", usersList);
+    return { status: true, users: usersList };
   } catch (err) {
-    return res
-      .status(500)
-      .json({ status: false, error: "Internal server error" });
+    return { status: false, error: "Internal server error" };
   }
 };
 
-const getSearchedUser = async (req, res) => {
-  const email = req.params.email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const getSearchedUser = async (socket, data) => {
+  const email = data.email.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   try {
     const user = await Authentication.aggregate([
-      { $match: { email: { $not: { $eq: req.headers.email } } } },
+      { $match: { email: { $not: { $eq: socket.headers.email } } } },
       { $match: { email: { $regex: email, $options: "i" } } },
     ]);
-    return res.status(200).json({ status: true, user });
+    return { status: true, user };
   } catch (err) {
-    return res
-      .status(500)
-      .json({ status: false, error: "Internal server error" });
+    return { status: false, error: "Internal server error" };
   }
 };
 
