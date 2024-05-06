@@ -3,10 +3,15 @@ const connectToDB = require("./config/connectToDb");
 const cors = require("cors");
 const socket = require("socket.io");
 const authenticateSocketUser = require("./middlewares/socketAuth");
-const { addMessage, getMessages } = require("./controllers/messagesController");
+const {
+  addMessage,
+  getMessages,
+  updateMessageStatus,
+} = require("./controllers/messagesController");
 const {
   getUserAccounts,
   getSearchedUser,
+  loginUser,
 } = require("./controllers/authenticationController");
 
 connectToDB();
@@ -28,11 +33,7 @@ app.use(require("./routes/chatRoutes"));
 
 global.onlineUsers = new Map();
 const onConnection = (socket) => {
-  console.log("made socket connection", socket.id);
   socket.emit("connection", null);
-  socket.on("disconnect", () => {
-    console.log("🔥: A user disconnected");
-  });
 
   socket.on("add_user", (userId) => {
     onlineUsers.set(userId, socket.id);
@@ -40,19 +41,42 @@ const onConnection = (socket) => {
   });
 
   socket.on("send_msg", async (data) => {
+    const response = await addMessage(socket, data);
+    console.log("resp", response);
     const sendMessageToUser = onlineUsers.get(data.receiver);
-    if (sendMessageToUser) {
+    console.log("incomDate", data);
+    if (sendMessageToUser && response.status) {
       socket.to(sendMessageToUser).emit("receiveMsg", {
         message: data.message,
         sender: socket.headers.email,
+        senderId: socket.headers.id,
         chatId: data.chatId,
+        messageId: data.messageId,
         time: new Date().toISOString(),
         status: "unread",
+        success: true,
       });
+    } else {
+      const sender = onlineUsers.get(data.senderId);
+      if (sender) {
+        socket.to(sender).emit("msgFailure", {
+          messagesId: data.messageId,
+          chatId: data.chatId,
+        });
+      }
     }
-    const response = await addMessage(socket, data);
     socket.emit("checkUserOnlineStatus", sendMessageToUser);
-    socket.emit("checkMsgDelivered", { message: response });
+    socket.emit("checkMsgDelivered", { response });
+  });
+
+  socket.on("msgRead", async (data) => {
+    console.log("read");
+    const messages = await updateMessageStatus(socket, data);
+    console.log("sender", onlineUsers.get(data.senderId));
+    const onlineSender = onlineUsers.get(data.senderId);
+    if (onlineSender) {
+      socket.to(onlineSender).emit("getMessages", messages);
+    }
   });
 
   socket.on("getUsersRequest", async (data) => {

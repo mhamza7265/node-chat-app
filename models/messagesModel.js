@@ -5,7 +5,15 @@ const messagesSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  messageId: {
+    type: String,
+    required: true,
+  },
   sender: {
+    type: String,
+    required: true,
+  },
+  senderId: {
     type: String,
     required: true,
   },
@@ -19,6 +27,10 @@ const messagesSchema = new mongoose.Schema({
   },
   status: {
     type: String,
+    required: true,
+  },
+  success: {
+    type: Boolean,
     required: true,
   },
 });
