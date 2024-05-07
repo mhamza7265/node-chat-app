@@ -37,14 +37,11 @@ const onConnection = (socket) => {
 
   socket.on("add_user", (userId) => {
     onlineUsers.set(userId, socket.id);
-    console.log("onlineUsers", onlineUsers);
   });
 
   socket.on("send_msg", async (data) => {
     const response = await addMessage(socket, data);
-    console.log("resp", response);
     const sendMessageToUser = onlineUsers.get(data.receiver);
-    console.log("incomDate", data);
     if (sendMessageToUser && response.status) {
       socket.to(sendMessageToUser).emit("receiveMsg", {
         message: data.message,
@@ -70,9 +67,7 @@ const onConnection = (socket) => {
   });
 
   socket.on("msgRead", async (data) => {
-    console.log("read");
     const messages = await updateMessageStatus(socket, data);
-    console.log("sender", onlineUsers.get(data.senderId));
     const onlineSender = onlineUsers.get(data.senderId);
     if (onlineSender) {
       socket.to(onlineSender).emit("getMessages", messages);
@@ -92,6 +87,11 @@ const onConnection = (socket) => {
   socket.on("getMessages", async (data) => {
     const messages = await getMessages(socket, data);
     socket.emit("getMsgs", messages);
+  });
+
+  socket.on("getMoreMessages", async (data) => {
+    const messages = await getMessages(socket, data);
+    socket.emit("moreMessages", messages);
   });
 };
 

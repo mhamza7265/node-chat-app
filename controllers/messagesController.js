@@ -19,23 +19,45 @@ const addMessage = async (socket, data) => {
 };
 
 const getMessages = async (socket, data) => {
+  const currentPage = data.page;
+  let page = 1;
+  const limit = 15;
+  const sort = { time: -1 };
+  if (currentPage) page = currentPage;
   try {
-    const messages = await Messages.find({ chatId: data });
-    return { status: true, messages };
+    const messages = await Messages.paginate(
+      { chatId: data.chatId },
+      { page, limit, sort }
+    );
+    const messagesArray = messages.docs;
+    messagesArray.reverse();
+    const msgs = { ...messages, docs: [...messagesArray] };
+    return { status: true, messages: msgs };
   } catch (err) {
     return { status: false, error: "Internal server error" };
   }
 };
 
 const updateMessageStatus = async (socket, data) => {
+  const currentPage = data.page;
+  let page = 1;
+  const limit = 15;
+  const sort = { time: -1 };
+  if (currentPage) page = currentPage;
   try {
     const updated = await Messages.updateMany(
-      { messageId: { $in: data.messageId } },
+      { messageId: data.messageId },
       { status: "read" }
     );
     if (updated.acknowledged) {
-      const messages = await Messages.find();
-      return { status: true, messages };
+      const messages = await Messages.paginate(
+        { chatId: data.chatId },
+        { page, limit, sort }
+      );
+      const messagesArray = messages.docs;
+      messagesArray.reverse();
+      const msgs = { ...messages, docs: [...messagesArray] };
+      return { status: true, messages: msgs };
     }
   } catch (err) {
     return { status: false, error: "Internal server error" };
