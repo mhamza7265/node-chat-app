@@ -1,6 +1,9 @@
 const Chat = require("../models/chatModel");
 
 const addChat = async (req, res) => {
+  console.log("req body", req.body);
+  const email1 = req.headers.email;
+  const email2 = req.body.receiver;
   try {
     const users = await Chat.aggregate([
       { $match: { users: { $eq: req.headers.email } } },
@@ -11,8 +14,11 @@ const addChat = async (req, res) => {
       const chat = await Chat.create({
         users: [req.headers.email, req.body.receiver],
         userIds: [req.headers.id, req.body.userId],
-        name: req.body.name,
-        image: req.body.image,
+        name: [
+          req.body.name,
+          req.headers.firstName + " " + req.headers.lastName,
+        ],
+        image: { [email1]: req.body.image1, [email2]: req.body.image2 },
         date: date.toISOString(),
       });
       return res

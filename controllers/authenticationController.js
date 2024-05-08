@@ -324,6 +324,7 @@ const getUserAccounts = async (socket, data) => {
   const limit = 5;
   if (currentPage) page = currentPage;
   try {
+    console.log("socketEmail", socket.headers.email);
     const user = Authentication.aggregate([
       { $match: { email: { $not: { $eq: socket.headers.email } } } },
       {
