@@ -7,6 +7,7 @@ const {
   addMessage,
   getMessages,
   updateMessageStatus,
+  deleteMessage,
 } = require("./controllers/messagesController");
 const {
   getUserAccounts,
@@ -92,6 +93,16 @@ const onConnection = (socket) => {
   socket.on("getMoreMessages", async (data) => {
     const messages = await getMessages(socket, data);
     socket.emit("moreMessages", messages);
+  });
+
+  socket.on("deleteMsg", async (data) => {
+    const deleted = await deleteMessage(socket, data);
+    const user = onlineUsers.get(data.receiver);
+    console.log("user", user);
+    if (user) {
+      socket.to(user).emit("deleteMsgRes", deleted);
+    }
+    socket.emit("deleteMsgRes", deleted);
   });
 };
 

@@ -64,4 +64,25 @@ const updateMessageStatus = async (socket, data) => {
   }
 };
 
-module.exports = { addMessage, getMessages, updateMessageStatus };
+const deleteMessage = async (socket, data) => {
+  try {
+    const message = await Messages.findOne({ messageId: data.messageId });
+    if (message.sender == socket.headers.email) {
+      const deleted = await Messages.deleteOne({ messageId: data.messageId });
+      if (deleted.acknowledged) {
+        return { status: true, messageId: data.messageId };
+      }
+    } else {
+      return { status: false, error: "Not authorized" };
+    }
+  } catch (err) {
+    return { status: false, error: "Internal server error" };
+  }
+};
+
+module.exports = {
+  addMessage,
+  getMessages,
+  updateMessageStatus,
+  deleteMessage,
+};
